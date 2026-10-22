@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 
-const CONTRACT_ADDRESS = "0x8C43eDCC6D1E9eC63f464344bA1c7CCFb3Ecd588";
+const CONTRACT_ADDRESS =
+  "0x8C43eDCC6D1E9eC63f464344bA1c7CCFb3Ecd588";
 
 const ABI = [
   "function registerProduct(string,string,string,string)",
@@ -11,26 +12,28 @@ const ABI = [
   "function getProductHistory(string) view returns (string[])"
 ];
 
+const RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
+
 export default function useContract() {
   const [contract, setContract] = useState(null);
   const [account, setAccount] = useState("");
   const [error, setError] = useState("");
 
+  // Public read-only connection: no wallet needed
+  const [readContract] = useState(() => {
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+    return new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+  });
+
   async function connectWallet() {
     try {
       setError("");
 
-      // Check whether MetaMask is available
-      const ethereum = window.ethereum;
-
-      if (!ethereum) {
-        throw new Error(
-          "MetaMask is not detected. Open this website in Chrome and refresh."
-        );
+      if (!window.ethereum) {
+        throw new Error("MetaMask is not detected.");
       }
 
-      // Connect wallet first
-      const accounts = await ethereum.request({
+      const accounts = await window.ethereum.request({
         method: "eth_requestAccounts"
       });
 
@@ -38,24 +41,21 @@ export default function useContract() {
         throw new Error("Please unlock MetaMask and try again.");
       }
 
-      setAccount(accounts[0]);
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
 
-      // Contract connection needs a deployed contract address
-      if (!CONTRACT_ADDRESS) {
-        throw new Error(
-          "Wallet connected! Contract address is still missing."
-        );
+      if (network.chainId !== 11155111n) {
+        throw new Error("Please switch MetaMask to Sepolia network.");
       }
 
-      const provider = new ethers.BrowserProvider(ethereum);
       const signer = await provider.getSigner();
-
       const instance = new ethers.Contract(
         CONTRACT_ADDRESS,
         ABI,
         signer
       );
 
+      setAccount(accounts[0]);
       setContract(instance);
       return instance;
     } catch (err) {
@@ -64,5 +64,11 @@ export default function useContract() {
     }
   }
 
-  return { contract, account, error, connectWallet };
+  return {
+    contract,
+    readContract,
+    account,
+    error,
+    connectWallet
+  };
 }

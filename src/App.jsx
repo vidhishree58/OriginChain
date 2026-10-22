@@ -9,33 +9,62 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("track");
   const [product, setProduct] = useState(null);
   const [message, setMessage] = useState("");
-  const { contract, account, error, connectWallet } = useContract();
+  const { contract, readContract, account, error, connectWallet } =
+    useContract();
   const [updatingStage, setUpdatingStage] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
   function changeTab(tab) {
+    if (tab === "register" && !isAdmin) {
+      setActiveTab("admin");
+      setMessage("");
+      setProduct(null);
+      return;
+    }
+
     setActiveTab(tab);
     setMessage("");
     setProduct(null);
   }
 
-  async function handleSearch(id) {
-    if (!contract) {
-      setMessage("Please connect your wallet first.");
-      return;
-    }
+  function handleAdminLogin(e) {
+    e.preventDefault();
 
+    if (adminUsername === ADMIN_USERNAME && adminPassword === ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setActiveTab("register");
+      setAdminUsername("");
+      setAdminPassword("");
+      setMessage("Admin login successful!");
+    } else {
+      setMessage("Invalid username or password.");
+    }
+  }
+
+  function handleAdminLogout() {
+    setIsAdmin(false);
+    setActiveTab("track");
+    setProduct(null);
+    setMessage("Admin logged out.");
+  }
+
+  async function handleSearch(id) {
     try {
       setProduct(null);
       setMessage("Searching for product on the blockchain...");
 
-      const result = await contract.getProduct(id.trim());
+      const result = await readContract.getProduct(id.trim());
 
       if (!result[4]) {
         setMessage(`Product "${id}" was not found.`);
         return;
       }
 
-      const history = await contract.getProductHistory(id.trim());
+      const history = await readContract.getProductHistory(id.trim());
 
       setProduct({
         id: id.trim(),
@@ -58,8 +87,13 @@ export default function App() {
   }
 
   async function handleUpdateStage() {
+    if (!isAdmin) {
+      setMessage("Please log in as admin to update a product.");
+      return;
+    }
+
     if (!contract || !product || updatingStage) {
-      setMessage("Please connect your wallet first.");
+      setMessage("Please connect your MetaMask wallet first.");
       return;
     }
 
@@ -84,10 +118,11 @@ export default function App() {
       setMessage(
         "Transaction submitted. Waiting for blockchain confirmation...",
       );
+
       await tx.wait();
 
-      const result = await contract.getProduct(product.id);
-      const history = await contract.getProductHistory(product.id);
+      const result = await readContract.getProduct(product.id);
+      const history = await readContract.getProductHistory(product.id);
 
       setProduct({
         id: product.id,
@@ -123,6 +158,8 @@ export default function App() {
         setActiveTab={changeTab}
         account={account}
         onConnect={handleConnectWallet}
+        isAdmin={isAdmin}
+        onLogout={handleAdminLogout}
       />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
@@ -136,13 +173,17 @@ export default function App() {
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 {activeTab === "track"
                   ? "Track a product"
-                  : "Register a product"}
+                  : activeTab === "admin"
+                    ? "Admin Login"
+                    : "Register a product"}
               </h2>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
                 {activeTab === "track"
                   ? "Look up product information and follow its journey through the supply chain."
-                  : "Enter the product details to create its traceable record."}
+                  : activeTab === "admin"
+                    ? "Sign in to access product management features."
+                    : "Enter the product details to create its traceable record."}
               </p>
             </div>
 
@@ -170,7 +211,7 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === "track" ? (
+        {activeTab === "track" && (
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)] lg:gap-8">
             <ProductSearch onSearch={handleSearch} />
 
@@ -199,7 +240,6 @@ export default function App() {
                       <p className="text-sm font-semibold text-slate-800">
                         {title}
                       </p>
-
                       <p className="mt-1 text-sm leading-5 text-slate-500">
                         {description}
                       </p>
@@ -215,32 +255,108 @@ export default function App() {
                   product={product}
                   onUpdateStage={handleUpdateStage}
                   updating={updatingStage}
+                  isAdmin={isAdmin}
                 />
               </div>
             )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)] lg:gap-8">
-            <ProductForm
-              contract={contract}
-              account={account}
-              onMessage={setMessage}
-            />
+        )}
 
-            <aside className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7">
-              <p className="text-sm font-semibold text-slate-900">
-                Before registering
+        {activeTab === "admin" && (
+          <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="mb-6 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl">
+                🔐
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Admin Login</h3>
+              <p className="mt-2 text-sm text-slate-500">
+                Log in to register products and manage their journey.
               </p>
+            </div>
 
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-500">
-                <li>• Use a unique product ID.</li>
-                <li>• Enter the correct product and manufacturer details.</li>
-                <li>
-                  • Confirm the details before submitting the transaction.
-                </li>
-              </ul>
-            </aside>
+            <form onSubmit={handleAdminLogin} className="space-y-5">
+              <div>
+                <label
+                  htmlFor="admin-username"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  Username
+                </label>
+                <input
+                  id="admin-username"
+                  type="text"
+                  autoComplete="username"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  placeholder="Enter admin username"
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="admin-password"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  Password
+                </label>
+                <input
+                  id="admin-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="Enter admin password"
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              >
+                Login as Admin
+              </button>
+            </form>
+
+            <p className="mt-5 text-center text-xs leading-5 text-slate-400">
+              Demo credentials are configured for this college prototype.
+            </p>
           </div>
+        )}
+
+        {activeTab === "register" && isAdmin && (
+          <>
+            <div className="mb-6 rounded-xl border border-teal-100 bg-teal-50 px-4 py-3">
+              <p className="text-sm font-medium text-teal-900">
+                Admin mode · Product management enabled
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)] lg:gap-8">
+              <ProductForm
+                contract={contract}
+                account={account}
+                onMessage={setMessage}
+              />
+
+              <aside className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7">
+                <p className="text-sm font-semibold text-slate-900">
+                  Before registering
+                </p>
+
+                <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-500">
+                  <li>• Use a unique product ID.</li>
+                  <li>• Enter the correct product and manufacturer details.</li>
+                  <li>
+                    • Connect MetaMask to submit the blockchain transaction.
+                  </li>
+                </ul>
+              </aside>
+            </div>
+          </>
         )}
       </main>
 

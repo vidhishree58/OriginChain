@@ -4,11 +4,13 @@ export default function Navbar({
   setActiveTab,
   account,
   onConnect,
-  connecting = false
+  connecting = false,
+  isAdmin = false,
+  onLogout,
 }) {
   const tabs = [
-    { id: "track", label: "Track Product" },
-    { id: "register", label: "Register Product" }
+    { id: "track", label: isAdmin ? "Track & Update" : "Track Product" },
+    ...(isAdmin ? [{ id: "register", label: "Register Product" }] : []),
   ];
 
   return (
@@ -23,15 +25,14 @@ export default function Navbar({
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <nav aria-label="Main navigation"
-            className="flex gap-1 rounded-xl bg-slate-100 p-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <nav className="flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`min-h-11 flex-1 rounded-lg px-3 py-2 text-sm font-semibold sm:flex-none ${
+                className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold ${
                   activeTab === tab.id
                     ? "bg-teal-700 text-white shadow-sm"
                     : "text-slate-600 hover:bg-white"
@@ -40,20 +41,46 @@ export default function Navbar({
                 {tab.label}
               </button>
             ))}
+
+            {!isAdmin && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("admin")}
+                className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold ${
+                  activeTab === "admin"
+                    ? "bg-teal-700 text-white"
+                    : "text-slate-600 hover:bg-white"
+                }`}
+              >
+                Admin Login
+              </button>
+            )}
           </nav>
 
-          <button
-            type="button"
-            onClick={onConnect}
-            disabled={connecting}
-            className="min-h-11 rounded-lg border border-teal-700 px-4 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50 disabled:opacity-60"
-          >
-            {connecting
-              ? "Connecting..."
-              : account
-                ? `${account.slice(0, 6)}...${account.slice(-4)}`
-                : "Connect Wallet"}
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                type="button"
+                onClick={onConnect}
+                disabled={connecting}
+                className="min-h-11 rounded-lg border border-teal-700 px-4 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50 disabled:opacity-60"
+              >
+                {connecting
+                  ? "Connecting..."
+                  : account
+                    ? `${account.slice(0, 6)}...${account.slice(-4)}`
+                    : "Connect Wallet"}
+              </button>
+
+              <button
+                type="button"
+                onClick={onLogout}
+                className="min-h-11 rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+              >
+                Logout
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

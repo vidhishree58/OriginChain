@@ -5,6 +5,7 @@ export default function ProductDetails({
   product,
   onUpdateStage,
   updating = false,
+  isAdmin = false,
 }) {
   const currentStage = product.currentStage || product.stage || "—";
 
@@ -12,8 +13,8 @@ export default function ProductDetails({
     currentStage === "Manufacturer"
       ? "Distributor"
       : currentStage === "Distributor"
-      ? "Retailer"
-      : null;
+        ? "Retailer"
+        : null;
 
   return (
     <section className="w-full rounded-2xl border border-slate-200 bg-white p-5 sm:p-8">
@@ -46,27 +47,32 @@ export default function ProductDetails({
         ))}
       </dl>
 
-      <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
-        {nextStage ? (
-          <>
-            <p className="text-sm text-slate-600">
-              Move this product to the next supply-chain stage.
+      {isAdmin && (
+        <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
+          {nextStage ? (
+            <>
+              <p className="text-sm text-slate-600">
+                Move this product to the next supply-chain stage.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => onUpdateStage?.()}
+                disabled={updating || !onUpdateStage}
+                className="mt-3 w-full rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {updating
+                  ? "Updating blockchain..."
+                  : `Update to ${nextStage}`}
+              </button>
+            </>
+          ) : (
+            <p className="text-sm font-semibold text-teal-800">
+              Product journey completed — this product has reached the Retailer.
             </p>
-            <button
-              type="button"
-              onClick={() => onUpdateStage?.()}
-              disabled={updating || !onUpdateStage}
-              className="mt-3 w-full rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            >
-              {updating ? "Updating blockchain..." : `Update to ${nextStage}`}
-            </button>
-          </>
-        ) : (
-          <p className="text-sm font-semibold text-teal-800">
-            Product journey completed — this product has reached the Retailer.
-          </p>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <ProductJourney history={product.history || []} />
     </section>
