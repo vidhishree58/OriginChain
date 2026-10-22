@@ -15,8 +15,8 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminUsername, setAdminUsername] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
-  const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME;
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
+  const ADMIN_USERNAME = import.meta.env.LOGIN_USERNAME;
+  const ADMIN_PASSWORD = import.meta.env.LOGIN_PASSWORD;
 
   function changeTab(tab) {
     if (tab === "register" && !isAdmin) {
