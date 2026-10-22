@@ -1,52 +1,71 @@
 # OriginChain — Blockchain-Based Product Tracking System
 
-OriginChain is a blockchain-based product tracking system that helps track a product's journey from the manufacturer to the distributor and finally to the retailer. It uses Ethereum smart contracts to store product information and maintain a transparent journey history.
+OriginChain is a blockchain-based product tracking web application that enables users to track a product's journey from the manufacturer to the distributor and finally to the retailer. Built using React and Ethereum smart contracts, it provides transparent product information and a verifiable history of product-stage updates.
+
+🌐 **Live Website:** https://originchain.netlify.app/  
+📂 **GitHub Repository:** https://github.com/vidhishree58/OriginChain
 
 ## Features
 
-- **Connect Wallet:** Connect your MetaMask wallet to interact with the application.
-- **Register Product:** Register a new product with a unique product ID, name, and other required details.
-- **Search Product:** Search for a registered product using its product ID.
-- **Update Product Stage:** Update a product's stage as it moves from Manufacturer to Distributor and then Retailer.
-- **Product Journey:** View the recorded journey and stage history of a product.
-- **Blockchain Integration:** Interact with a deployed Ethereum smart contract.
-- **Transaction Transparency:** View contract activity on a blockchain explorer.
+- **Public Product Tracking:** Search for products using a unique product ID without connecting a wallet.
+- **Product Details:** View registered product information and its current stage.
+- **Product Journey:** Explore the recorded stages and history of a product.
+- **Admin Login:** Access the administrative interface to manage products.
+- **Product Registration:** Register new products with their required details.
+- **Product Stage Updates:** Update a product's stage as it moves through the supply chain.
+- **MetaMask Integration:** Connect a wallet to perform blockchain transactions.
+- **Blockchain Transparency:** Interact with a deployed Ethereum smart contract and inspect transactions using a blockchain explorer.
+
+## Product Tracking Workflow
+
+```text
+Manufacturer
+     |
+     v
+Distributor
+     |
+     v
+Retailer
+```
+
+Product-stage updates are recorded through smart contract transactions on the Ethereum Sepolia Testnet.
 
 ## Tech Stack
 
-**Frontend**
+### Frontend
 - React.js
 - Vite
 - Tailwind CSS
 - JavaScript
 
-**Blockchain**
+### Blockchain
 - Solidity
-- Ethereum (Sepolia Testnet)
+- Ethereum Sepolia Testnet
 - ethers.js
 - MetaMask
 
-**Development Tools**
+### Development Tools
 - Git and GitHub
-- Remix IDE / Solidity development tools
+- Remix IDE
 - Blockscout Explorer
 
 ## Smart Contract Details
 
-- **Network:** Sepolia Testnet
-- **Chain ID:** 11155111
+- **Network:** Ethereum Sepolia Testnet
+- **Chain ID:** `11155111`
 - **Contract Address:** `0x8C43eDCC6D1E9eC63f464344bA1c7CCFb3Ecd588`
 
-The smart contract stores product information and manages product-stage updates on the blockchain.
+The smart contract stores product information and records product-stage updates on the blockchain.
 
 ## Getting Started
 
 ### Prerequisites
 
-Before running the project, make sure you have:
+Make sure you have the following installed:
 
-- Node.js and npm installed
-- MetaMask browser extension installed
+- Node.js and npm
+- Git
+- MetaMask browser extension (required for wallet-based transactions)
 - A MetaMask wallet configured for the Sepolia Testnet
 - Sepolia test ETH for blockchain transactions
 
@@ -64,7 +83,7 @@ Before running the project, make sure you have:
    cd OriginChain
    ```
 
-3. Install dependencies:
+3. Install the dependencies:
 
    ```bash
    npm install
@@ -84,65 +103,79 @@ Before running the project, make sure you have:
 
 ## How to Use
 
-1. Start the application and open it in your browser.
-2. Connect your MetaMask wallet.
-3. Make sure MetaMask is connected to the Sepolia Testnet.
-4. Register a product using a unique product ID.
-5. Search for the product to view its details.
-6. Update the product stage in the required order:
-   - Manufacturer
-   - Distributor
-   - Retailer
-7. View the product journey to check its recorded stages.
-8. Use the Blockscout explorer to inspect the smart contract and its blockchain activity.
+### Public Users
 
-**Note:** Each product ID should be unique. If an ID is already registered, use a different one for a new product.
+1. Open the website.
+2. Navigate to the product tracking section.
+3. Enter a registered product ID.
+4. View the product details, current stage, and available journey history.
 
-## Product Tracking Workflow
+Public tracking does not require an admin login or wallet connection.
 
-```text
-Manufacturer
-     |
-     v
-Distributor
-     |
-     v
-Retailer
-```
+### Administrators
 
-OriginChain records product-stage updates through smart contract transactions on the Sepolia Testnet.
+1. Open the admin login section.
+2. Log in using the configured demo credentials.
+3. Connect MetaMask when performing blockchain transactions.
+4. Register a product using a unique product ID and the required details.
+5. Search for a registered product.
+6. Update its stage as it moves through the supply chain.
+7. View the product journey and recorded history.
+8. Use a blockchain explorer to inspect relevant transactions.
+
+**Note:** Each product ID must be unique. If an ID is already registered, choose a different one.
+
+## Blockchain Explorer
+
+You can inspect the deployed contract and its on-chain activity using a Sepolia-compatible blockchain explorer.
+
+- **Contract address:** `0x8C43eDCC6D1E9eC63f464344bA1c7CCFb3Ecd588`
+- **Network:** Sepolia Testnet
 
 ## Testing
 
-The following functionalities have been manually tested:
+The following features are intended to be tested during development:
 
-- MetaMask wallet connection
+- Wallet connection
 - Product registration
 - Product search
 - Product-stage updates
-- Product journey history display
-- Handling of invalid product IDs
+- Product journey and history display
+- Invalid product ID handling
+- Public tracking and admin interface separation
 
-Automated build and lint checks should be run before deployment.
+Run the following commands before deployment to check that the project builds correctly:
+
+```bash
+npm run build
+```
+
+If the project has a configured lint script, you can also run:
+
+```bash
+npm run lint
+```
 
 ## Limitations
 
-- The application currently uses the Sepolia Testnet and is intended for testing and demonstration purposes.
-- Users need MetaMask and Sepolia test ETH to perform blockchain transactions.
-- The current smart contract does not implement role-based access control for stage updates. Production use would require appropriate access restrictions and additional security testing.
-- Blockchain transactions may require confirmation and gas fees in test ETH.
+- The application currently uses the Sepolia Testnet and is intended for demonstration and testing.
+- Blockchain transactions require wallet approval and test ETH.
+- Demo login credentials in a frontend-only application should not be considered secure authentication.
+- If the smart contract does not enforce role-based permissions, users may be able to submit stage updates directly through the contract.
+- Production deployment requires appropriate access control, authentication, and smart contract security testing.
 
 ## Future Improvements
 
-- Add role-based access control for manufacturers, distributors, and retailers.
+- Implement role-based access control for manufacturers, distributors, and retailers.
 - Add QR-code-based product verification.
-- Improve product authentication and anti-counterfeiting features.
-- Add more detailed transaction and product-history views.
-- Conduct additional smart contract security testing before production deployment.
+- Strengthen authentication and authorization.
+- Improve transaction details and product-history visualizations.
+- Add comprehensive automated tests.
+- Conduct smart contract security audits before production use.
 
 ## Project Purpose
 
-OriginChain demonstrates how blockchain technology can improve transparency and traceability in product supply chains by maintaining a verifiable record of product movement.
+OriginChain demonstrates how blockchain technology can improve transparency and traceability in supply chains. By maintaining product information and stage updates on a blockchain, the application helps users inspect a product's journey through different stages of distribution.
 
 ---
 
